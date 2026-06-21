@@ -6,11 +6,17 @@ Mirror of [MobAI-App/ios-builder](https://github.com/MobAI-App/ios-builder) for 
 
 ## Install
 
+**macOS / Linux**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Maortz/android-builder/refs/heads/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Maortz/android-builder/main/install.sh | bash
 ```
 
-Or manually download a release from [Releases](https://github.com/Maortz/android-builder/releases), place it in your `PATH`, and make it executable.
+**Windows (PowerShell)**
+```powershell
+irm https://raw.githubusercontent.com/Maortz/android-builder/main/install.ps1 | iex
+```
+
+Or manually download a binary from [Releases](https://github.com/Maortz/android-builder/releases) and place it in your `PATH`.
 
 ## Prerequisites
 
@@ -88,7 +94,8 @@ After `builder init`, edit `builder.json` to customize:
   "platform": "android",
   "github": {
     "owner": "your-username",
-    "repo": "your-repo"
+    "repo": "your-repo",
+    "branch": "master"
   },
   "android": {
     "buildType": "debug",
@@ -112,6 +119,7 @@ After `builder init`, edit `builder.json` to customize:
 - **android.flavor** — optional build flavor
 - **android.packageName** — app package name (e.g., `com.example.allergy_detector`)
 - **flutter.version** — Flutter version; empty string = latest stable
+- **github.branch** — branch to dispatch workflow on (default: `master`)
 - **flutter.watch** — file watcher config for hot reload (dirs, patterns, ignore list, debounce in ms)
 
 ## How it works
