@@ -1,0 +1,45 @@
+version: 2
+
+project_name: android-builder
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/builder
+    binary: builder
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - format: binary
+    name_template: "builder_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  github:
+    owner: Maortz
+    name: android-builder
+  draft: false
+  prerelease: auto
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
