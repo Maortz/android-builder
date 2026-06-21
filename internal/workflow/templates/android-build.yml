@@ -1,0 +1,98 @@
+name: Android Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_id:
+        description: 'Unique build identifier'
+        required: true
+        type: string
+      build_type:
+        description: 'Build type: debug or release'
+        required: false
+        type: string
+        default: 'debug'
+      flutter_version:
+        description: 'Flutter version (empty = latest stable)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter_version || '' }}
+          channel: stable
+          cache: true
+
+      - name: Restore Gradle cache
+        uses: actions/cache@v4
+        id: gradle-cache
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/build.gradle', 'android/app/build.gradle', 'android/settings.gradle.kts') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build APK
+        env:
+          BUILD_ID: ${{ inputs.build_id }}
+          BUILD_TYPE: ${{ inputs.build_type }}
+        run: |
+          set -e
+          if [ "$BUILD_TYPE" = "release" ]; then
+            flutter build apk --release
+            SRC="build/app/outputs/flutter-apk/app-release.apk"
+          else
+            flutter build apk --debug
+            SRC="build/app/outputs/flutter-apk/app-debug.apk"
+          fi
+          mkdir -p build/dist
+          cp "$SRC" "build/dist/${BUILD_ID}.apk"
+          echo "APK: build/dist/${BUILD_ID}.apk ($(du -h "build/dist/${BUILD_ID}.apk" | cut -f1))"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: app/build/dist/*.apk
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Save Gradle cache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/build.gradle', 'android/app/build.gradle', 'android/settings.gradle.kts') }}
+
+      - name: Build summary
+        if: always()
+        run: |
+          echo "## Android Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build ID:** ${{ inputs.build_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Type:** ${{ inputs.build_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Gradle Cache:** ${{ steps.gradle-cache.outputs.cache-hit == 'true' && 'Hit' || 'Miss' }}" >> $GITHUB_STEP_SUMMARY
+          if [ -f "build/dist/${{ inputs.build_id }}.apk" ]; then
+            echo "- **APK Size:** $(du -h "build/dist/${{ inputs.build_id }}.apk" | cut -f1)" >> $GITHUB_STEP_SUMMARY
+          fi
