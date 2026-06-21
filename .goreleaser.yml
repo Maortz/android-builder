@@ -25,6 +25,7 @@ builds:
 archives:
   - format: binary
     name_template: "builder_{{ .Os }}_{{ .Arch }}"
+    # GoReleaser appends .exe automatically for windows
 
 checksum:
   name_template: "checksums.txt"
