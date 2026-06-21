@@ -67,7 +67,11 @@ func (c *Coordinator) Build(ctx context.Context, opts BuildOptions) (*BuildResul
 	if c.config.Flutter.Version != "" {
 		inputs["flutter_version"] = c.config.Flutter.Version
 	}
-	if err := c.github.TriggerWorkflow(ctx, c.config.GitHub.Owner, c.config.GitHub.Repo, WorkflowFile, inputs); err != nil {
+	branch := c.config.GitHub.Branch
+	if branch == "" {
+		branch = "master"
+	}
+	if err := c.github.TriggerWorkflow(ctx, c.config.GitHub.Owner, c.config.GitHub.Repo, WorkflowFile, branch, inputs); err != nil {
 		c.progress.Error(PhaseTriggering, err)
 		return nil, fmt.Errorf("trigger: %w", err)
 	}

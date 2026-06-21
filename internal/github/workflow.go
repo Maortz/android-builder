@@ -14,12 +14,12 @@ func jsonDecode(r io.Reader, v any) error {
 	return json.NewDecoder(r).Decode(v)
 }
 
-func (c *Client) TriggerWorkflow(ctx context.Context, owner, repo, workflowFile string, inputs map[string]string) error {
+func (c *Client) TriggerWorkflow(ctx context.Context, owner, repo, workflowFile, ref string, inputs map[string]string) error {
 	type payload struct {
 		Ref    string            `json:"ref"`
 		Inputs map[string]string `json:"inputs"`
 	}
-	b, _ := json.Marshal(payload{Ref: "main", Inputs: inputs})
+	b, _ := json.Marshal(payload{Ref: ref, Inputs: inputs})
 	path := fmt.Sprintf("/repos/%s/%s/actions/workflows/%s/dispatches", owner, repo, workflowFile)
 	resp, err := c.do(ctx, "POST", path, strings.NewReader(string(b)))
 	if err != nil {

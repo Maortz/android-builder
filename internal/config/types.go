@@ -13,8 +13,9 @@ type Config struct {
 }
 
 type GitHubConfig struct {
-	Owner string `json:"owner"`
-	Repo  string `json:"repo"`
+	Owner  string `json:"owner"`
+	Repo   string `json:"repo"`
+	Branch string `json:"branch,omitempty"`
 }
 
 type AndroidConfig struct {
