@@ -1,0 +1,28 @@
+{
+  "enabledPlugins": {
+    "caveman@caveman": true,
+    "token-optimizer@alexgreensh-token-optimizer": true,
+    "superpowers@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": { "source": "github", "repo": "JuliusBrussee/caveman" }
+    },
+    "alexgreensh-token-optimizer": {
+      "source": { "source": "github", "repo": "alexgreensh/token-optimizer" }
+    },
+    "claude-plugins-official": {
+      "source": { "source": "github", "repo": "anthropics/claude-code" }
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "rtk hook claude" }
+        ]
+      }
+    ]
+  }
+}

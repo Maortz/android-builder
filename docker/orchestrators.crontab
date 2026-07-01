@@ -1,0 +1,3 @@
+# Autonomous orchestrators for android-builder — add entries here to enable.
+# Example: run a review every 10 hours
+# 0 0,10,20 * * * flock -n /tmp/review.lock tmux new-window -t claude -n review "cd /workspace && git pull origin main && claude --dangerously-skip-permissions -p '/review'"

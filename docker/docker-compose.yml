@@ -1,0 +1,46 @@
+services:
+  claude:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: android-builder-dev
+    restart: always
+    ports:
+      # remote SSH access into the container (rootless sshd, key auth only)
+      - "${SSH_PORT:-2224}:2224"
+    volumes:
+      - ../:/workspace
+      # persist /home/dev (ssh host key, authorized_keys, tmux, shell history)
+      - claude-home:/home/dev
+      # persist Claude login + config across container restarts
+      - claude-config:/home/dev/.claude
+      # speed up rebuilds: cache Go modules
+      - gomod-cache:/home/dev/go
+    environment:
+      # keep ALL Claude config (incl. ~/.claude.json account/login record) inside
+      # the mounted volume. Without this, .claude.json lands on the ephemeral
+      # container layer and login is lost on every --rm even though the tokens
+      # in .credentials.json persist -> "not logged in" each run.
+      - CLAUDE_CONFIG_DIR=/home/dev/.claude
+      # optional: skip browser login by passing a key from host
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # public key seeded into ~/.ssh/authorized_keys for remote SSH (port 2224)
+      - SSH_PUBKEY=${SSH_PUBKEY:-}
+      # GitHub PAT (from host env GH_TOKEN). Used by gh CLI and git push.
+      - GH_TOKEN=${GH_TOKEN:-}
+      - GITHUB_TOKEN=${GH_TOKEN:-}
+      # set ENABLE_CRON=1 to auto-start the autonomous orchestrators on boot
+      - ENABLE_CRON=${ENABLE_CRON:-0}
+      # inject a git credential helper purely via env (no rebuild, no file):
+      # any github.com https push/pull authenticates with the PAT above
+      - GIT_CONFIG_COUNT=1
+      - GIT_CONFIG_KEY_0=credential.https://github.com.helper
+      - GIT_CONFIG_VALUE_0=!f() { echo username=x-access-token; echo "password=$${GH_TOKEN}"; }; f
+    stdin_open: true
+    tty: true
+    command: bash
+
+volumes:
+  claude-home:
+  claude-config:
+  gomod-cache:
