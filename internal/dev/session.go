@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Maortz/android-builder/internal/adb"
 	"github.com/manifoldco/promptui"
 )
 
@@ -51,7 +52,7 @@ func (s *Session) Start(ctx context.Context) error {
 
 	if !s.skipInstall {
 		fmt.Printf("Installing %s...\n", s.apkPath)
-		if err := adbRun(ctx, deviceID, "install", "-r", s.apkPath); err != nil {
+		if err := adb.Install(ctx, deviceID, s.apkPath); err != nil {
 			return fmt.Errorf("adb install: %w", err)
 		}
 		fmt.Println("Installed.")
@@ -65,7 +66,7 @@ func (s *Session) Start(ctx context.Context) error {
 		}
 
 		fmt.Printf("Launching %s...\n", s.packageName)
-		if err := adbRun(ctx, deviceID, "shell", "monkey", "-p", s.packageName, "-c", "android.intent.category.LAUNCHER", "1"); err != nil {
+		if err := adb.Run(ctx, deviceID, "shell", "monkey", "-p", s.packageName, "-c", "android.intent.category.LAUNCHER", "1"); err != nil {
 			return fmt.Errorf("launch app: %w", err)
 		}
 	}
@@ -77,48 +78,26 @@ func (s *Session) selectDevice() (string, error) {
 	if s.deviceID != "" {
 		return s.deviceID, nil
 	}
-	devices, err := listDevices()
+	devices, err := adb.Devices()
 	if err != nil {
 		return "", err
 	}
-	if len(devices) == 0 {
+	var serials []string
+	for _, d := range devices {
+		if d.State == "device" {
+			serials = append(serials, d.Serial)
+		}
+	}
+	if len(serials) == 0 {
 		return "", fmt.Errorf("no Android devices found\nEnable USB debugging and reconnect, then check: adb devices")
 	}
-	if len(devices) == 1 {
-		fmt.Printf("Device: %s\n", devices[0])
-		return devices[0], nil
+	if len(serials) == 1 {
+		fmt.Printf("Device: %s\n", serials[0])
+		return serials[0], nil
 	}
-	prompt := promptui.Select{Label: "Select device", Items: devices}
+	prompt := promptui.Select{Label: "Select device", Items: serials}
 	_, selected, err := prompt.Run()
 	return selected, err
-}
-
-func listDevices() ([]string, error) {
-	out, err := exec.Command("adb", "devices").Output()
-	if err != nil {
-		return nil, fmt.Errorf("adb not found: %w\nInstall Platform-Tools: https://developer.android.com/tools/releases/platform-tools", err)
-	}
-	var devices []string
-	for _, line := range strings.Split(string(out), "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "List of") || strings.HasPrefix(line, "*") {
-			continue
-		}
-		parts := strings.Fields(line)
-		if len(parts) >= 2 && parts[1] == "device" {
-			devices = append(devices, parts[0])
-		}
-	}
-	return devices, nil
-}
-
-func adbRun(ctx context.Context, deviceID string, args ...string) error {
-	fullArgs := append([]string{"-s", deviceID}, args...)
-	out, err := exec.CommandContext(ctx, "adb", fullArgs...).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("%w\n%s", err, strings.TrimSpace(string(out)))
-	}
-	return nil
 }
 
 func detectPackageName(apkPath string) (string, error) {
