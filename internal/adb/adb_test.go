@@ -20,3 +20,12 @@ func TestParseDevicesOutput(t *testing.T) {
 		t.Errorf("unexpected second device: %+v", devices[1])
 	}
 }
+
+func TestReverseAndReverseRemoveArgs(t *testing.T) {
+	if got := reverseArgs("8081", "8081"); len(got) != 2 || got[0] != "tcp:8081" || got[1] != "tcp:8081" {
+		t.Fatalf("unexpected reverse args: %v", got)
+	}
+	if got := reverseRemoveArgs("8081"); len(got) != 1 || got[0] != "tcp:8081" {
+		t.Fatalf("unexpected reverse-remove args: %v", got)
+	}
+}

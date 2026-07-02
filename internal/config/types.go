@@ -5,11 +5,12 @@ import "errors"
 var ErrConfigNotFound = errors.New("builder.json not found")
 
 type Config struct {
-	Project  string        `json:"project"`
-	Platform string        `json:"platform"`
-	GitHub   GitHubConfig  `json:"github"`
-	Android  AndroidConfig `json:"android,omitempty"`
-	Flutter  FlutterConfig `json:"flutter,omitempty"`
+	Project     string            `json:"project"`
+	Platform    string            `json:"platform"`
+	GitHub      GitHubConfig      `json:"github"`
+	Android     AndroidConfig     `json:"android,omitempty"`
+	Flutter     FlutterConfig     `json:"flutter,omitempty"`
+	ReactNative ReactNativeConfig `json:"reactNative,omitempty"`
 }
 
 type GitHubConfig struct {
@@ -23,6 +24,10 @@ type AndroidConfig struct {
 	Flavor      string `json:"flavor,omitempty"`
 	PackageName string `json:"packageName,omitempty"`
 	DeviceID    string `json:"deviceId,omitempty"`
+}
+
+type ReactNativeConfig struct {
+	MetroPort int `json:"metroPort,omitempty"`
 }
 
 type FlutterConfig struct {

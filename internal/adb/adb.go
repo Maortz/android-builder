@@ -78,6 +78,22 @@ func ForwardRemove(ctx context.Context, deviceID, devicePort string) error {
 	return Run(ctx, deviceID, "forward", "--remove", "tcp:"+devicePort)
 }
 
+func reverseArgs(devicePort, hostPort string) []string {
+	return []string{"tcp:" + devicePort, "tcp:" + hostPort}
+}
+
+func reverseRemoveArgs(devicePort string) []string {
+	return []string{"tcp:" + devicePort}
+}
+
+func Reverse(ctx context.Context, deviceID, devicePort, hostPort string) error {
+	return Run(ctx, deviceID, append([]string{"reverse"}, reverseArgs(devicePort, hostPort)...)...)
+}
+
+func ReverseRemove(ctx context.Context, deviceID, devicePort string) error {
+	return Run(ctx, deviceID, append([]string{"reverse", "--remove"}, reverseRemoveArgs(devicePort)...)...)
+}
+
 func Logcat(ctx context.Context, deviceID string, pid int, clear bool, w io.Writer) error {
 	if clear {
 		if err := Run(ctx, deviceID, "logcat", "-c"); err != nil {
