@@ -27,6 +27,7 @@ func init() {
 	androidBuildCmd.Flags().StringP("device", "d", "", "ADB device ID (used with --dev)")
 	androidBuildCmd.Flags().Bool("skip-install", false, "Skip APK install when using --dev")
 	androidBuildCmd.Flags().Bool("logs", false, "Stream logcat output (used with --dev)")
+	androidBuildCmd.Flags().Bool("unsigned", false, "Skip signing even if signing secrets are configured")
 	androidCmd.AddCommand(androidBuildCmd)
 }
 
@@ -45,12 +46,13 @@ func runAndroidBuild(cmd *cobra.Command, args []string) error {
 	deviceID, _ := cmd.Flags().GetString("device")
 	skipInstall, _ := cmd.Flags().GetBool("skip-install")
 	showLogs, _ := cmd.Flags().GetBool("logs")
+	unsigned, _ := cmd.Flags().GetBool("unsigned")
 
 	if devMode && release {
 		return fmt.Errorf("--dev only works with debug builds; remove --release")
 	}
 
-	apkPath, err := triggerBuild(cmd.Context(), cfg, output, timeout, release)
+	apkPath, err := triggerBuild(cmd.Context(), cfg, output, timeout, release, unsigned)
 	if err != nil {
 		return err
 	}
@@ -62,7 +64,7 @@ func runAndroidBuild(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func triggerBuild(ctx context.Context, cfg *config.Config, outputDir string, timeout time.Duration, release bool) (string, error) {
+func triggerBuild(ctx context.Context, cfg *config.Config, outputDir string, timeout time.Duration, release, unsigned bool) (string, error) {
 	gh, err := getGitHubClient()
 	if err != nil {
 		return "", err
@@ -72,6 +74,7 @@ func triggerBuild(ctx context.Context, cfg *config.Config, outputDir string, tim
 		OutputDir: outputDir,
 		Timeout:   timeout,
 		Release:   release,
+		Unsigned:  unsigned,
 	})
 	if err != nil {
 		return "", err

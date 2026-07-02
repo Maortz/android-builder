@@ -35,6 +35,7 @@ type BuildOptions struct {
 	OutputDir string
 	Timeout   time.Duration
 	Release   bool
+	Unsigned  bool
 }
 
 type BuildResult struct {
@@ -66,6 +67,9 @@ func (c *Coordinator) Build(ctx context.Context, opts BuildOptions) (*BuildResul
 	inputs := map[string]string{"build_id": buildID, "build_type": buildType}
 	if c.config.Flutter.Version != "" {
 		inputs["flutter_version"] = c.config.Flutter.Version
+	}
+	if opts.Unsigned {
+		inputs["unsigned"] = "true"
 	}
 	branch := c.config.GitHub.Branch
 	if branch == "" {

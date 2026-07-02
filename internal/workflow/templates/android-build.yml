@@ -17,6 +17,11 @@ on:
         required: false
         type: string
         default: ''
+      unsigned:
+        description: 'Force an unsigned build even if signing secrets are configured'
+        required: false
+        type: string
+        default: 'false'
 
 jobs:
   build:
@@ -50,6 +55,18 @@ jobs:
 
       - name: Flutter pub get
         run: flutter pub get
+
+      - name: Decode signing keystore
+        if: ${{ secrets.ANDROID_KEYSTORE != '' && inputs.unsigned != 'true' }}
+        working-directory: app/android/app
+        run: echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > release.keystore
+
+      - name: Configure signing env
+        if: ${{ secrets.ANDROID_KEYSTORE != '' && inputs.unsigned != 'true' }}
+        run: |
+          echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> "$GITHUB_ENV"
+          echo "ANDROID_STORE_PASSWORD=${{ secrets.ANDROID_STORE_PASSWORD }}" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> "$GITHUB_ENV"
 
       - name: Build APK
         env:

@@ -131,7 +131,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	// Offer immediate build
 	bp := promptui.Prompt{Label: "Run build now", IsConfirm: true}
 	if _, err := bp.Run(); err == nil {
-		_, err := triggerBuild(context.Background(), cfg, "dist", 30*time.Minute, false)
+		_, err := triggerBuild(context.Background(), cfg, "dist", 30*time.Minute, false, false)
 		return err
 	}
 
