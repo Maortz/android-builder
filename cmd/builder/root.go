@@ -21,6 +21,7 @@ func init() {
 	rootCmd.AddCommand(authCmd)
 	rootCmd.AddCommand(devCmd)
 	rootCmd.AddCommand(adbCmd)
+	rootCmd.AddCommand(signingCmd)
 }
 
 func getGitHubClient() (*github.Client, error) {

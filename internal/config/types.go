@@ -24,6 +24,7 @@ type AndroidConfig struct {
 	Flavor      string `json:"flavor,omitempty"`
 	PackageName string `json:"packageName,omitempty"`
 	DeviceID    string `json:"deviceId,omitempty"`
+	Signing     bool   `json:"signing,omitempty"`
 }
 
 type ReactNativeConfig struct {
