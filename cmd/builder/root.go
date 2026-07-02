@@ -20,6 +20,7 @@ func init() {
 	rootCmd.AddCommand(androidCmd)
 	rootCmd.AddCommand(authCmd)
 	rootCmd.AddCommand(devCmd)
+	rootCmd.AddCommand(adbCmd)
 }
 
 func getGitHubClient() (*github.Client, error) {

@@ -22,6 +22,7 @@ type AndroidConfig struct {
 	BuildType   string `json:"buildType,omitempty"`
 	Flavor      string `json:"flavor,omitempty"`
 	PackageName string `json:"packageName,omitempty"`
+	DeviceID    string `json:"deviceId,omitempty"`
 }
 
 type FlutterConfig struct {
