@@ -25,4 +25,17 @@ var authGithubCmd = &cobra.Command{
 	},
 }
 
-func init() { authCmd.AddCommand(authGithubCmd) }
+var authLogoutCmd = &cobra.Command{
+	Use:   "logout",
+	Short: "Remove stored credentials",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		auth.DeleteToken()
+		fmt.Println("Logged out successfully")
+		return nil
+	},
+}
+
+func init() {
+	authCmd.AddCommand(authGithubCmd)
+	authCmd.AddCommand(authLogoutCmd)
+}
