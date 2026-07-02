@@ -24,6 +24,7 @@ func init() {
 	devFlutterCmd.Flags().Bool("skip-install", false, "Skip APK install (requires --package)")
 	devFlutterCmd.Flags().Bool("no-attach", false, "Print flutter attach command instead of running")
 	devFlutterCmd.Flags().Bool("no-watch", false, "Disable file-change hot reload")
+	devFlutterCmd.Flags().Bool("logs", false, "Stream logcat output alongside flutter attach")
 	devCmd.AddCommand(devFlutterCmd)
 }
 
@@ -34,6 +35,7 @@ func runDevFlutter(cmd *cobra.Command, args []string) error {
 	skipInstall, _ := cmd.Flags().GetBool("skip-install")
 	noAttach, _ := cmd.Flags().GetBool("no-attach")
 	noWatch, _ := cmd.Flags().GetBool("no-watch")
+	showLogs, _ := cmd.Flags().GetBool("logs")
 
 	watchCfg := &config.WatchConfig{
 		Dirs:     []string{"lib"},
@@ -69,7 +71,7 @@ func runDevFlutter(cmd *cobra.Command, args []string) error {
 		fmt.Printf("APK: %s\n", apkPath)
 	}
 
-	handler := dev.NewFlutterHandler(noAttach, noWatch, watchCfg)
+	handler := dev.NewFlutterHandler(noAttach, noWatch, showLogs, watchCfg)
 	session := dev.NewSession(deviceID, apkPath, handler)
 	session.SetSkipInstall(skipInstall, packageName)
 	return session.Start(cmd.Context())
